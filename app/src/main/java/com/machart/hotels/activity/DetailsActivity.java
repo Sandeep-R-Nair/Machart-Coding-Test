@@ -3,6 +3,7 @@ package com.machart.hotels.activity;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
+import android.view.View;
 import android.widget.TextView;
 
 import com.machart.hotels.R;
@@ -30,7 +31,10 @@ public class DetailsActivity extends AppCompatActivity {
 
         tvTitle.setText(dataList.get(position).getName());
         tvAddress.setText("Address: "+dataList.get(position).getAddress_1()+", "+dataList.get(position).getAddress_2()+", "+dataList.get(position).getPlace());
-        tvMobile.setText("Mobile: "+dataList.get(position).getCountry_code()+"-"+dataList.get(position).getMobile());
+        if(dataList.get(position).getMobile().length()>0)
+            tvMobile.setText("Mobile: "+dataList.get(position).getCountry_code()+"-"+dataList.get(position).getMobile());
+        else
+            tvMobile.setVisibility(View.GONE);
         tvTelPhone.setText("Tel: "+dataList.get(position).getStd_code()+"-"+dataList.get(position).getTelephone_1());
         tvEmail.setText("Email "+dataList.get(position).getComm_email());
     }
