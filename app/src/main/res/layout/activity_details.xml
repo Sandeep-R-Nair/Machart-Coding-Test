@@ -11,10 +11,10 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
         <ImageView
+            android:id="@+id/imageBackArrow"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:src="@drawable/ic_round_arrow_back_ios_24"
-            android:layout_alignParentStart="true"
             android:layout_marginTop="16dp"/>
     </Toolbar>
     <LinearLayout
@@ -32,19 +32,18 @@
             android:id="@+id/tvTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Title"
             android:textSize="18sp"
             android:textColor="@color/black"
             android:textStyle="bold"
-            android:layout_marginBottom="8dp"/>
+            android:layout_marginBottom="8dp"
+            android:layout_marginTop="24dp"/>
         <TextView
             android:id="@+id/tvAddress"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Address"
-            android:drawableLeft="@drawable/ic_round_location_on_24"
             android:textColor="@color/black"
-            android:layout_marginBottom="16dp"/>
+            android:layout_marginBottom="16dp"
+            app:drawableLeftCompat="@drawable/ic_round_location_on_24" />
         <View
             android:layout_width="match_parent"
             android:layout_height="1dp"
@@ -54,7 +53,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Contact Details"
+            android:text="@string/contact_details"
             android:textSize="16sp"
             android:textColor="@color/black"
             android:textStyle="bold"
@@ -64,21 +63,18 @@
             android:id="@+id/tvTelPhone"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Tel"
             android:textColor="@color/black"
             android:layout_marginBottom="8dp"/>
         <TextView
             android:id="@+id/tvMobile"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Mobile"
             android:textColor="@color/black"
             android:layout_marginBottom="8dp"/>
         <TextView
             android:id="@+id/tvEmail"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Email"
             android:textColor="@color/black"
             android:layout_marginBottom="8dp"/>
     </LinearLayout>

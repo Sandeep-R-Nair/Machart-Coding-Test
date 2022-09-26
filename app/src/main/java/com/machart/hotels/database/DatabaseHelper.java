@@ -32,6 +32,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         onCreate(db);
     }
 
+    //write data to table
     public boolean insertData(String id, String array_str, String lat, String lon) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
@@ -40,12 +41,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         contentValues.put(COL_3, lat);
         contentValues.put(COL_4, lon);
         long result = db.insert(TABLE_NAME, null, contentValues);
-        if (result == -1)
-            return false;
-        else
-            return true;
+        return result != -1;
     }
 
+    //update table
     public boolean updateData(String id, String array_str, String lat, String lon) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
@@ -54,23 +53,22 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         contentValues.put(COL_3, lat);
         contentValues.put(COL_4, lon);
         long result = db.update(TABLE_NAME, contentValues, "ID = ?", new String[]{id});
-        if (result == -1)
-            return false;
-        else
-            return true;
+        return result != -1;
     }
 
+    //read all data from table
     public Cursor getAllData() {
         SQLiteDatabase db = this.getWritableDatabase();
-        Cursor res = db.rawQuery("SELECT * FROM " + TABLE_NAME, null);
-        return res;
+        return db.rawQuery("SELECT * FROM " + TABLE_NAME, null);
     }
 
+    //clear table
     public Integer deleteAllData() {
         SQLiteDatabase db = this.getWritableDatabase();
         return db.delete(TABLE_NAME, null, null);
     }
 
+    //get table size
     public int getTableSizeCount() {
         String countQuery = "SELECT  * FROM " + TABLE_NAME;
         SQLiteDatabase db = this.getReadableDatabase();
@@ -80,9 +78,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return count;
     }
 
+    //check whether the latitude/{longitude} is present in table
     public boolean CheckIsDataAlreadyIn(String lat, String lon) {
         SQLiteDatabase db = this.getWritableDatabase();
-        String Query = "Select * from " + TABLE_NAME + " where LATITUDE = " + lat;
+        String Query = String.format("Select * from %s where LATITUDE = %s", TABLE_NAME, lat);
         Cursor cursor = db.rawQuery(Query, null);
         if (cursor.getCount() <= 0) {
             cursor.close();
@@ -93,10 +92,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         }
     }
 
+    //read array list string from table
     public String getArrayListString() {
         SQLiteDatabase db = this.getWritableDatabase();
         String selectedQty;
-        Cursor cursor = db.rawQuery("select ARRAY_STR from " + TABLE_NAME + " where ID = 1", null);
+        Cursor cursor = db.rawQuery(String.format("select ARRAY_STR from %s where ID = 1", TABLE_NAME), null);
 
         cursor.moveToFirst();
         selectedQty = cursor.getString(0);

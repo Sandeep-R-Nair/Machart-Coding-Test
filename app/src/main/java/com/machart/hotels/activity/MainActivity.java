@@ -3,6 +3,7 @@ package com.machart.hotels.activity;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.SearchView;
 import androidx.core.app.ActivityCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -51,6 +52,7 @@ import retrofit2.Response;
 public class MainActivity extends AppCompatActivity {
     private LocationRequest locationRequest;
     private RecyclerView recyclerView;
+    private SearchView searchView;
     private HotelsAdapter adapter;
     private ProgressDialog progressDoalog;
     private DatabaseHelper myDb;
@@ -61,6 +63,8 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        myDb = new DatabaseHelper(this);
+
         initViews();
 
         locationRequest = LocationRequest.create();
@@ -68,12 +72,26 @@ public class MainActivity extends AppCompatActivity {
         locationRequest.setInterval(5000);
         locationRequest.setFastestInterval(2000);
 
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String s) {
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String s) {
+                adapter.getFilter().filter(s);
+                return true;
+            }
+        });
+
+        //get current latitude and longitude
         getCurrentLocation();
     }
 
     private void initViews() {
-        myDb = new DatabaseHelper(this);
         recyclerView = findViewById(R.id.relativeLayout);
+        searchView = findViewById(R.id.searchView);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         progressDoalog = new ProgressDialog(MainActivity.this);
         progressDoalog.setMessage("Loading....");
@@ -123,12 +141,15 @@ public class MainActivity extends AppCompatActivity {
                                     LocationServices.getFusedLocationProviderClient(MainActivity.this)
                                             .removeLocationUpdates(this);
 
-                                    if (locationResult != null && locationResult.getLocations().size() >0){
+                                    if (locationResult.getLocations().size() >0){
 
                                         int index = locationResult.getLocations().size() - 1;
+
+                                        //current latitude and longitude
                                         double latitude = locationResult.getLocations().get(index).getLatitude();
                                         double longitude = locationResult.getLocations().get(index).getLongitude();
 
+                                        //if sqlite db is not empty, fetch sqlite data else fetch from server
                                         if(myDb.getTableSizeCount()>0){
                                             progressDoalog.dismiss();
                                             Type type = new TypeToken<ArrayList<Hotels>>() {}.getType();
@@ -158,21 +179,19 @@ public class MainActivity extends AppCompatActivity {
         Call<ArrayList<Hotels>> call = service.getHotels(latitude, longitude);
         call.enqueue(new Callback<ArrayList<Hotels>>() {
             @Override
-            public void onResponse(Call<ArrayList<Hotels>> call, Response<ArrayList<Hotels>> response) {
+            public void onResponse(@NonNull Call<ArrayList<Hotels>> call, @NonNull Response<ArrayList<Hotels>> response) {
                 progressDoalog.dismiss();
 
+                //insert data fetched from server to sqlite db
                 String hotelData= gson.toJson(response.body());
                 boolean isInserted = myDb.insertData("1", hotelData, Double.toString(latitude), Double.toString(longitude));
-                if (isInserted)
-                    Toast.makeText(MainActivity.this, "Added", Toast.LENGTH_SHORT).show();
-                else
-                    Toast.makeText(MainActivity.this, "Error", Toast.LENGTH_SHORT).show();
+                Log.d("isInserted-->", String.valueOf(isInserted));
 
                 generateDataList(response.body());
             }
 
             @Override
-            public void onFailure(Call<ArrayList<Hotels>> call, Throwable t) {
+            public void onFailure(@NonNull Call<ArrayList<Hotels>> call, @NonNull Throwable t) {
                 progressDoalog.dismiss();
                 Toast.makeText(MainActivity.this, t.getMessage(), Toast.LENGTH_SHORT).show();
                 Log.d("onFailure-->", t.getMessage());
@@ -191,31 +210,28 @@ public class MainActivity extends AppCompatActivity {
         Task<LocationSettingsResponse> result = LocationServices.getSettingsClient(getApplicationContext())
                 .checkLocationSettings(builder.build());
 
-        result.addOnCompleteListener(new OnCompleteListener<LocationSettingsResponse>() {
-            @Override
-            public void onComplete(@NonNull Task<LocationSettingsResponse> task) {
+        result.addOnCompleteListener(task -> {
 
-                try {
-                    LocationSettingsResponse response = task.getResult(ApiException.class);
-                    Toast.makeText(MainActivity.this, "GPS is already tured on", Toast.LENGTH_SHORT).show();
+            try {
+                LocationSettingsResponse response = task.getResult(ApiException.class);
+                Toast.makeText(MainActivity.this, "GPS is already turned on", Toast.LENGTH_SHORT).show();
 
-                } catch (ApiException e) {
+            } catch (ApiException e) {
 
-                    switch (e.getStatusCode()) {
-                        case LocationSettingsStatusCodes.RESOLUTION_REQUIRED:
+                switch (e.getStatusCode()) {
+                    case LocationSettingsStatusCodes.RESOLUTION_REQUIRED:
 
-                            try {
-                                ResolvableApiException resolvableApiException = (ResolvableApiException) e;
-                                resolvableApiException.startResolutionForResult(MainActivity.this, 2);
-                            } catch (IntentSender.SendIntentException ex) {
-                                ex.printStackTrace();
-                            }
-                            break;
+                        try {
+                            ResolvableApiException resolvableApiException = (ResolvableApiException) e;
+                            resolvableApiException.startResolutionForResult(MainActivity.this, 2);
+                        } catch (IntentSender.SendIntentException ex) {
+                            ex.printStackTrace();
+                        }
+                        break;
 
-                        case LocationSettingsStatusCodes.SETTINGS_CHANGE_UNAVAILABLE:
-                            //Device does not have location
-                            break;
-                    }
+                    case LocationSettingsStatusCodes.SETTINGS_CHANGE_UNAVAILABLE:
+                        //Device does not have location
+                        break;
                 }
             }
         });
@@ -224,7 +240,7 @@ public class MainActivity extends AppCompatActivity {
 
     private boolean isGPSEnabled() {
         LocationManager locationManager = null;
-        boolean isEnabled = false;
+        boolean isEnabled;
 
         if (locationManager == null) {
             locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
@@ -235,9 +251,8 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    /*Method to generate List of data using RecyclerView with custom adapter*/
+    //Method to generate List of data using RecyclerView with custom adapter
     private void generateDataList(ArrayList<Hotels> hotelList) {
-
         adapter = new HotelsAdapter(this,hotelList);
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(MainActivity.this);
         recyclerView.setLayoutManager(layoutManager);
