@@ -1,4 +1,3 @@
-# MachartCodingTest
 
 Fetch  JSON data from the following URL machart.in/api/list.php?lat=LATITUDE&lon=LONGITUDE and <br />
 · request user location and pass user current latitude & longitude in web service to obtain the data - DONE <br />
@@ -9,6 +8,3 @@ Fetch  JSON data from the following URL machart.in/api/list.php?lat=LATITUDE&lon
 
 Feature can be added later: <br />
 · Update the list on location change - fetch data from the web service on location change and update the table <br /><br />
-
-!! Questions !! <br />
-· What is the base url of the hotel images?
